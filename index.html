@@ -7,6 +7,18 @@
         font-size: 12px;
         font-family: sans-serif;
       }
+      div.tooltip {
+        position: absolute;
+        text-align: center;
+        width: 100px;
+        height: 50px;
+        padding: 2px;
+        font: 12px sans-serif;
+        background: lightsteelblue;
+        border: 0px;
+        border-radius: 8px;
+        pointer-events: none;
+      }
     </style>
   </head>
   <body style="background-color: bisque">
@@ -17,7 +29,6 @@
     <script>
       var colorScheme = ["#f8fcfc", "#d0dcf4", "#78b4dc", "#307cbc", "#10346c"];
       // colorScheme.unshift("#eee");
-
       var colorScale = d3.scaleThreshold().range(colorScheme);
       let width = 1000,
         height = 600;
@@ -83,6 +94,11 @@
               data[0]
             );
 
+          var div = d3
+            .select("body")
+            .append("div")
+            .attr("class", "tooltip")
+            .style("opacity", 0);
           let geopath = d3.geoPath().projection(projection);
           svg
             .append("g")
@@ -114,21 +130,30 @@
                 return "#10346c";
               }
             })
+
+            //NOTE DO NOT USE d3.event.pageX, USE event.pageX IF NOT THE HOVERING DOSENT APPEAR BESIDE YOUR MOUSE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             .on("mouseover", (event, d) => {
               console.log(d.properties.Name);
-              d3.select(".tooltip")
-                .text(d.properties.Name)
-                .style("position", "absolute")
-                .style("background", "#fff")
-                .style("left", event.pageX + "px")
-                .style("top", event.pageY + "px");
               let path = d3.select(event.currentTarget);
               path.style("stroke", "red").style("stroke-width", 2);
+              //Makes the new div appear on hover:
+              div.transition().duration(200).style("opacity", 0.9);
+              div
+                .html(
+                  d.properties.Name +
+                    "</br>" +
+                    "Population: " +
+                    d.properties.Population
+                )
+                .style("left", event.pageX + "px")
+                .style("top", event.pageY - 28 + "px");
             })
             .on("mouseout", (event, d) => {
               d3.select(".tooltip").text("");
               let path = d3.select(event.currentTarget);
               path.style("stroke", "none");
+              //Makes the new div disappear:
+              div.transition().duration("50").style("opacity", 0);
             });
         }
       );
